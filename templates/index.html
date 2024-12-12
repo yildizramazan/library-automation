@@ -1,10 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8">
+  <title>Home</title>
 </head>
 <body>
+  <a href="{{url_for('login')}}">Login</a>
+  <br>
+  <a href="{{url_for('add')}}"> Add Book to Library</a>
+   <br> <br> <br>
+  <div>
+  {% for row in rows %}
+    <br>
+    <a href="{{url_for('show_individual', id=row.KitapID)}}"> Details </a>
+    <p> KitapID: {{row.KitapID}} ---- Başlık: {{row.Baslik}} ---- Yazar: {{row.Yazar}} ---- Yayınevi:  {{row.Yayinevi}} ---- ISBN: {{row.ISBN}} ---- Durum: {{row.Durum}}</p>
+    <button><a href="{{url_for('delete_book', id=row.KitapID)}}">Delete</a></button>
+    <br>
+  {% endfor %}
+ </div>
 
 </body>
 </html>

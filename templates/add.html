@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Book</title>
+</head>
+<body>
+    <form method="POST" action="{{url_for('add')}}">
+        {{form.csrf_token}}
+        <p>
+            {{form.baslik.label}} <br> {{form.baslik(size=20)}}
+        </p>
+        <p>
+            {{form.yazar.label}} <br> {{form.yazar(size=20)}}
+        </p>
+        <p>
+            {{form.yayinevi.label}} <br> {{form.yayinevi(size=20)}}
+        </p>
+        <p>
+            {{form.isbn.label}} <br> {{form.isbn(size=25)}}
+        </p>
+        {{ form.submit }}
+    </form>
+</body>
+</html>
