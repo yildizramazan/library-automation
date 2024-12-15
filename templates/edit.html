@@ -1,0 +1,29 @@
+<!--edit.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Book</title>
+</head>
+<body>
+    <form method="POST" action="{{url_for('edit_book', id=id)}}">
+        {{edit_form.csrf_token}}
+        <p>
+            {{edit_form.baslik.label}} <br> {{edit_form.baslik(size=20)}}
+        </p>
+        <p>
+            {{edit_form.yazar.label}} <br> {{edit_form.yazar(size=20)}}
+        </p>
+        <p>
+            {{edit_form.yayinevi.label}} <br> {{edit_form.yayinevi(size=20)}}
+        </p>
+        <p>
+            {{edit_form.tur.label}} <br> {{edit_form.tur(size=20)}}
+        </p>
+        <p>
+            {{edit_form.isbn.label}} <br> {{edit_form.isbn(size=25)}}
+        </p>
+        {{ edit_form.submit }}
+    </form>
+</body>
+</html>
