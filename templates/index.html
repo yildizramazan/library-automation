@@ -21,10 +21,24 @@
     {% endfor %}
   </ul>
   <br> <br>
+  {% if not loggedin%}
   <a href="{{url_for('login')}}">Login</a>
   <br>
+  {% endif %}
   <a href="{{url_for('add')}}"> Add Book to Library</a>
-   <br> <br>
+   <br>
+  <a href="{{url_for('register')}}">Register</a>
+  <br>
+  <a href="{{url_for('dashboard')}}">Dashboard</a>
+  <br>
+  {% if is_admin%}
+    <a href="{{url_for('admin_panel')}}">Admin Panel</a>
+  <br>
+  {% endif %}
+  {% if loggedin%}
+    <a href="{{url_for('logout')}}">Log out</a>
+  <br>
+  {% endif %}
 
 
 </body>

@@ -5,6 +5,16 @@
   <title>Login</title>
 </head>
 <body>
-  <p>welcome to login page</p>
+  <h1>login page</h1>
+      <form method="POST" action="{{url_for('login')}}">
+        {{form.csrf_token}}
+        <p>
+            {{form.username.label}} <br> {{form.username(size=20)}}
+        </p>
+        <p>
+            {{form.password.label}} <br> {{form.password(size=20)}}
+        </p>
+        {{ form.submit }}
+    </form>
 </body>
 </html>

@@ -1,25 +1,50 @@
 from idlelib.query import Query
 
 import pyodbc
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, session, abort
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from  flask_wtf import FlaskForm
+from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, PasswordField, SubmitField
 from wtforms.validators import DataRequired
 from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
 app.secret_key = "database-library-automation-project-240709022"
-Bootstrap(app)
 
 server = 'localhost'
 database = 'master'
-username = 'SA'
-password = 'YourPassword123'
+server_username = 'SA'
+server_password = 'YourPassword123'
 conn = pyodbc.connect(
-    f'DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password};TrustServerCertificate=yes;',
+    f'DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={server};DATABASE={database};UID={server_username};PWD={server_password};TrustServerCertificate=yes;',
     autocommit=True
 )
+
+cursor = conn.cursor()
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+class User(UserMixin):
+    def __init__(self, id, name, email, role):
+        self.id = id
+        self.name = name
+        self.email = email
+        self.role = role
+
+    def is_admin(self):
+        return self.role == "Admin"
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    # Kullanıcıyı veritabanından çek
+    cursor.execute("SELECT KullaniciID, AdSoyad, Eposta, Rol FROM Kullanıcılar WHERE KullaniciID = ?", user_id)
+    user = cursor.fetchone()
+    if user:
+        return User(id=user.KullaniciID, name=user.AdSoyad, email=user.Eposta, role=user.Rol)
+    return None
 
 
 class AddBookForm(FlaskForm):
@@ -49,8 +74,6 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-cursor = conn.cursor()
-
 def add_book(baslik, yazar, yayinevi, isbn, tur):
     cursor.execute(
         "INSERT INTO Kitaplar (Baslik, Yazar, Yayinevi, ISBN, Tur) VALUES (?, ?, ?, ?, ?)",
@@ -58,10 +81,17 @@ def add_book(baslik, yazar, yayinevi, isbn, tur):
     )
 
 
+
+
 @app.route('/', methods=["GET", "POST"])
 def index():
     results = []
-    query = ""
+    print(" kullanıcı admin mi", current_user.is_admin())
+    if current_user:
+        loggedin = True
+    else:
+        loggedin = False
+
     searchform = SearchForm()
     if searchform.validate_on_submit():
         query = f"%{searchform.search_bar.data}%"
@@ -70,8 +100,26 @@ def index():
                        (query, query, query, query, query)
         )
         results = cursor.fetchall()
-    return render_template('index.html', results=results, searchform=searchform)
+    return render_template('index.html', results=results, searchform=searchform, is_admin=current_user.is_admin(), loggedin=loggedin)
 
+
+
+@app.route('/dashboard')
+@login_required  # Kullanıcının giriş yapması zorunlu
+def dashboard():
+    name = current_user.name
+    role = current_user.role
+
+    return render_template("dashboard.html", name=name, role=role)
+
+@app.route('/admin')
+@login_required
+def admin_panel():
+    if not current_user.is_admin():
+        print("Bu sayfaya erişim yetkiniz yok!")
+        flash("Bu sayfaya erişim yetkiniz yok!", "danger")
+        return redirect(url_for('index'))
+    return render_template('admin.html')
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
@@ -98,12 +146,70 @@ def delete_book(id):
     return redirect(url_for('index'))
 
 
-@app.route('/login')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    register_form = RegisterForm()
+    if register_form.validate_on_submit():
+        new_name = register_form.name.data
+        new_surname = register_form.surname.data
+        new_username = register_form.username.data
+        new_password = generate_password_hash(register_form.password.data)
+        print(new_password)
+        # Kullanıcı adı kontrolü
+        cursor.execute("SELECT * FROM Kullanıcılar WHERE Eposta = ?", new_username)
+        print(new_username)
+        user = cursor.fetchone()
+        if user:
+            flash("Bu kullanıcı adı zaten alınmış!", "danger")
+            return redirect(url_for('register'))
+
+        # Yeni kullanıcı ekleme
+        cursor.execute(
+            "INSERT INTO Kullanıcılar (AdSoyad, Eposta, Sifre, Rol) VALUES (?, ?, ?, ?)",
+            (f"{new_name} {new_surname}", new_username, new_password, "Kullanici")
+        )
+        conn.commit()
+        flash("Kayıt başarılı! Şimdi giriş yapabilirsiniz.", "success")
+        return redirect(url_for('login'))
+
+    return render_template('register.html', form=register_form)
+
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template('login.html')
+    login_form = LoginForm()
+    if login_form.validate_on_submit():
+        username = login_form.username.data
+        password = login_form.password.data
 
+        # Kullanıcıyı veritabanından kontrol et
+        cursor.execute("SELECT KullaniciID, AdSoyad, Eposta, Sifre, Rol FROM Kullanıcılar WHERE Eposta = ?", username)
+        user = cursor.fetchone()
 
+        if user:
+            # Veritabanından dönen şifreyi kontrol et
+            if check_password_hash(user.Sifre, password):
+                user_obj = User(id=user.KullaniciID, name=user.AdSoyad, email=user.Eposta, role=user.Rol)
+                login_user(user_obj)  # Flask-Login ile kullanıcıyı oturum açtır
+                print(f"Hoşgeldiniz, {user.AdSoyad}!")
+                flash(f"Hoşgeldiniz, {user.AdSoyad}!", "success")
+                return redirect(url_for('index'))  # Ana sayfaya yönlendir
+            else:
+                print("Hatalı şifre! Lütfen tekrar deneyin.")
+                flash("Hatalı şifre! Lütfen tekrar deneyin.", "danger")
+        else:
+            print("Böyle bir kullanıcı bulunamadı!")
+            flash("Böyle bir kullanıcı bulunamadı!", "danger")
 
+    return render_template('login.html', form=login_form)  # Login formu sayfasını render et
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("Başarıyla çıkış yaptınız!", "success")
+    return redirect(url_for('login'))
 
 @app.route('/show-book/<int:id>')
 def show_individual(id):
@@ -152,7 +258,7 @@ def edit_book(id):
     edit_form.yayinevi.data = book.Yayinevi
     edit_form.isbn.data = book.ISBN
     edit_form.tur.data = book.Tur
-    
+
     return render_template('edit.html', edit_form=edit_form, id=id)
 
 

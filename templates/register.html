@@ -5,6 +5,22 @@
   <title>Register</title>
 </head>
 <body>
-
+  <h1>register page</h1>
+    <form method="POST" action="{{url_for('register')}}">
+        {{form.csrf_token}}
+        <p>
+            {{form.name.label}} <br> {{form.name(size=20)}}
+        </p>
+        <p>
+            {{form.surname.label}} <br> {{form.surname(size=20)}}
+        </p>
+        <p>
+            {{form.username.label}} <br> {{form.username(size=20)}}
+        </p>
+        <p>
+            {{form.password.label}} <br> {{form.password(size=20)}}
+        </p>
+        {{ form.submit }}
+    </form>
 </body>
 </html>
