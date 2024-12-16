@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, PasswordField, SubmitField
 from wtforms.validators import DataRequired
-from flask_bootstrap import Bootstrap
+
 
 app = Flask(__name__)
 app.secret_key = "database-library-automation-project-240709022"
@@ -86,8 +86,9 @@ def add_book(baslik, yazar, yayinevi, isbn, tur):
 @app.route('/', methods=["GET", "POST"])
 def index():
     results = []
-    print(" kullanıcı admin mi", current_user.is_admin())
-    if current_user:
+    is_admin = False
+    if current_user.is_authenticated:
+        is_admin = current_user.is_admin()
         loggedin = True
     else:
         loggedin = False
@@ -100,7 +101,7 @@ def index():
                        (query, query, query, query, query)
         )
         results = cursor.fetchall()
-    return render_template('index.html', results=results, searchform=searchform, is_admin=current_user.is_admin(), loggedin=loggedin)
+    return render_template('index.html', results=results, searchform=searchform, is_admin=is_admin, loggedin=loggedin)
 
 
 
@@ -120,6 +121,7 @@ def admin_panel():
         flash("Bu sayfaya erişim yetkiniz yok!", "danger")
         return redirect(url_for('index'))
     return render_template('admin.html')
+
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
@@ -145,6 +147,31 @@ def delete_book(id):
     # Silme işleminden sonra liste sayfasına yönlendir
     return redirect(url_for('index'))
 
+
+@app.route('/borrow/<int:kitapid>')
+@login_required
+def borrow_book(kitapid):
+    try:
+        cursor.execute("SELECT Durum FROM Kitaplar WHERE KitapID = ?", kitapid)
+        kitap_durum = cursor.fetchone()[0]
+        print(kitap_durum)
+        if kitap_durum == "Mevcut":
+            cursor.execute("INSERT INTO OduncIslemleri (KullaniciID, KitapID, OduncTarihi, TeslimTarihi, Durum)"
+                            "VALUES (?, ?, GETDATE(), DATEADD(DAY, 15, GETDATE()), 'OduncAlindi')",
+                           (current_user.id, kitapid) )
+            conn.commit()
+            cursor.execute(
+                "UPDATE Kitaplar SET Durum = 'OduncAlindi' WHERE KitapID = ?",
+                kitapid
+            )
+        else:
+            print("kitap ödünç alınmadı 1")
+            flash('Hata: Kitap ödünç alınmış', 'danger')
+
+    except Exception as e:
+        print("kitap ödünç alınmadı 2")
+        flash(f'Hata: {e}', 'danger')
+    return redirect(url_for('index'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -215,7 +242,9 @@ def logout():
 def show_individual(id):
     cursor.execute("SELECT * FROM Kitaplar WHERE KitapID = ?", id)
     book = cursor.fetchone()
-    return render_template("book.html", book=book)
+    return render_template("book.html", book=book, user=current_user)
+
+
 
 
 # @app.route('/edit-book/<int:id>', methods=['GET', 'POST'])
