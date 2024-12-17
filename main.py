@@ -1,5 +1,3 @@
-from idlelib.query import Query
-
 import pyodbc
 from flask import Flask, render_template, redirect, url_for, request, flash, session, abort
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -105,13 +103,27 @@ def index():
 
 
 
-@app.route('/dashboard')
+@app.route('/account')
 @login_required  # Kullanıcının giriş yapması zorunlu
-def dashboard():
+def account():
+    kullanıcıid = current_user.id
     name = current_user.name
     role = current_user.role
+    cursor.execute("SELECT * FROM Oduncİslemleri WHERE KullaniciID = ?", kullanıcıid)
+    books = cursor.fetchall()
+    return render_template("dashboard.html", name=name, role=role, books=books)
 
-    return render_template("dashboard.html", name=name, role=role)
+
+@app.route('/return-book/<int:id>')
+def return_book(id):
+    kullanıcıid = current_user.id
+    cursor.execute("SELECT * FROM Oduncİslemleri WHERE KullaniciID = ? AND KitapID = ?", (id, kullanıcıid))
+    book_to_return = cursor.fetchone()
+    cursor.execute("UPDATE Kitaplar SET Durum = 'Mevcut' WHERE KitapID = ?", id)
+    conn.commit()
+
+
+
 
 @app.route('/admin')
 @login_required
@@ -135,7 +147,12 @@ def add():
 
 
 @app.route('/delete/<int:id>')
+@login_required
 def delete_book(id):
+    if not current_user.is_admin():
+        print("bu silme işlemini yapma yetkiniz yok")
+        flash("Bu sayfaya erişim yetkiniz yok!", "danger")
+        return redirect(url_for('index'))
     try:
         # Kitabı veritabanından sil
         cursor.execute("DELETE FROM Kitaplar WHERE KitapID = ?", id)
@@ -148,6 +165,7 @@ def delete_book(id):
     return redirect(url_for('index'))
 
 
+
 @app.route('/borrow/<int:kitapid>')
 @login_required
 def borrow_book(kitapid):
@@ -156,16 +174,17 @@ def borrow_book(kitapid):
         kitap_durum = cursor.fetchone()[0]
         print(kitap_durum)
         if kitap_durum == "Mevcut":
-            cursor.execute("INSERT INTO OduncIslemleri (KullaniciID, KitapID, OduncTarihi, TeslimTarihi, Durum)"
-                            "VALUES (?, ?, GETDATE(), DATEADD(DAY, 15, GETDATE()), 'OduncAlindi')",
+            cursor.execute("INSERT INTO OduncIslemleri (KullaniciID, KitapID, OduncTarihi, TeslimTarihi)"
+                            "VALUES (?, ?, GETDATE(), DATEADD(DAY, 15, GETDATE()))",
                            (current_user.id, kitapid) )
             conn.commit()
             cursor.execute(
                 "UPDATE Kitaplar SET Durum = 'OduncAlindi' WHERE KitapID = ?",
                 kitapid
             )
+            conn.commit()
         else:
-            print("kitap ödünç alınmadı 1")
+            print("kitap ödünç alınmadı çünkü ödünç alınmış")
             flash('Hata: Kitap ödünç alınmış', 'danger')
 
     except Exception as e:
@@ -240,26 +259,16 @@ def logout():
 
 @app.route('/show-book/<int:id>')
 def show_individual(id):
+    is_admin = False
+    if current_user.is_authenticated:
+        is_admin = current_user.is_admin()
+        loggedin = True
+    else:
+        loggedin = False
     cursor.execute("SELECT * FROM Kitaplar WHERE KitapID = ?", id)
     book = cursor.fetchone()
-    return render_template("book.html", book=book, user=current_user)
+    return render_template("book.html", book=book, user=current_user, is_admin=is_admin, loggedin=loggedin)
 
-
-
-
-# @app.route('/edit-book/<int:id>', methods=['GET', 'POST'])
-# def edit_book(id):
-#     edit_form = AddBookForm()
-#     if edit_form.validate_on_submit():
-#         yeni_baslik = edit_form.baslik.data
-#         yeni_yazar = edit_form.yazar.data
-#         yeni_yayınevi = edit_form.yayinevi.data
-#         yeni_isbn = edit_form.isbn.data
-#         yeni_tur = edit_form.tur.data
-#         cursor.execute("UPDATE Kitaplar SET Baslik = ?, Yazar = ?, Yayınevi = ?, ISBN = ? ,Tur = ? WHERE KitapID = ?", (yeni_baslik, yeni_yazar, yeni_yayınevi, yeni_isbn, yeni_tur, id ))
-#     return render_template('edit.html', edit_form=edit_form)
-#
-#
 
 @app.route('/edit-book/<int:id>', methods=['GET', 'POST'])
 def edit_book(id):
@@ -289,6 +298,7 @@ def edit_book(id):
     edit_form.tur.data = book.Tur
 
     return render_template('edit.html', edit_form=edit_form, id=id)
+
 
 
 if __name__ == '__main__':
