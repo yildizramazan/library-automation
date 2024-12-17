@@ -24,15 +24,17 @@
   {% if not loggedin%}
   <a href="{{url_for('login')}}">Login</a>
   <br>
-  {% endif %}
-  <a href="{{url_for('add')}}"> Add Book to Library</a>
-   <br>
   <a href="{{url_for('register')}}">Register</a>
   <br>
-  <a href="{{url_for('account')}}">Account</a>
+  {% endif %}
+  {% if not is_admin and loggedin%}
+    <a href="{{url_for('account')}}">Account</a>
   <br>
+  {% endif %}
   {% if is_admin%}
     <a href="{{url_for('admin_panel')}}">Admin Panel</a>
+    <a href="{{url_for('add')}}"> Add Book to Library</a>
+    <br>
   <br>
   {% endif %}
   {% if loggedin%}

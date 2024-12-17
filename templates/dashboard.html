@@ -5,7 +5,15 @@
     <title>Dashboard</title>
 </head>
 <body>
+<p>merhaba</p>
     {{name}}
     {{role}}
+    <ul>
+        {%for book in books%}
+        <li>{{book}}</li>
+        <a href="{{url_for('return_book', id=book.KitapID)}}">Return The Book</a>
+        {%endfor%}
+
+    </ul>
 </body>
 </html>

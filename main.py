@@ -46,13 +46,22 @@ def load_user(user_id):
 
 
 class AddBookForm(FlaskForm):
-    baslik = StringField('Kitap Adı', validators=[DataRequired()])
-    yazar = StringField('Yazar', validators=[DataRequired()])
-    yayinevi = StringField('Yayınevi', validators=[DataRequired()])
+    baslik = StringField('Book Name', validators=[DataRequired()])
+    yazar = StringField('Author', validators=[DataRequired()])
+    yayinevi = StringField('Publisher', validators=[DataRequired()])
     isbn = IntegerField('ISBN', validators=[DataRequired()])
-    tur = StringField('Tür', validators=[DataRequired()])
+    tur = StringField('Genre', validators=[DataRequired()])
     submit = SubmitField('Add Book')
 
+
+
+class EditBookForm(FlaskForm):
+    baslik = StringField('Book Name', validators=[DataRequired()])
+    yazar = StringField('Author', validators=[DataRequired()])
+    yayinevi = StringField('Publisher', validators=[DataRequired()])
+    isbn = IntegerField('ISBN', validators=[DataRequired()])
+    tur = StringField('Genre', validators=[DataRequired()])
+    submit = SubmitField('Edit Book')
 
 
 class SearchForm(FlaskForm):
@@ -106,22 +115,27 @@ def index():
 @app.route('/account')
 @login_required  # Kullanıcının giriş yapması zorunlu
 def account():
+    if current_user.is_admin():
+        print("Bu sayfaya erişim yetkiniz yok!")
+        flash("Bu sayfaya erişim yetkiniz yok!", "danger")
+        return redirect(url_for('index'))
     kullanıcıid = current_user.id
     name = current_user.name
     role = current_user.role
-    cursor.execute("SELECT * FROM Oduncİslemleri WHERE KullaniciID = ?", kullanıcıid)
+    cursor.execute("SELECT * FROM OduncIslemleri WHERE KullaniciID = ?", kullanıcıid)
     books = cursor.fetchall()
     return render_template("dashboard.html", name=name, role=role, books=books)
 
 
 @app.route('/return-book/<int:id>')
 def return_book(id):
+    print(id, current_user.id)
     kullanıcıid = current_user.id
-    cursor.execute("SELECT * FROM Oduncİslemleri WHERE KullaniciID = ? AND KitapID = ?", (id, kullanıcıid))
-    book_to_return = cursor.fetchone()
+    cursor.execute("DELETE FROM OduncIslemleri WHERE KullaniciID = ? AND KitapID = ?", (kullanıcıid, id))
+    conn.commit()
     cursor.execute("UPDATE Kitaplar SET Durum = 'Mevcut' WHERE KitapID = ?", id)
     conn.commit()
-
+    return redirect(url_for('account'))
 
 
 
@@ -137,6 +151,10 @@ def admin_panel():
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
+    if not current_user.is_admin():
+        print("Bu sayfaya erişim yetkiniz yok!")
+        flash("Bu sayfaya erişim yetkiniz yok!", "danger")
+        return redirect(url_for('index'))
     add_form = AddBookForm()
     if add_form.validate_on_submit():
         print(add_form.baslik.data, add_form.yazar.data ,add_form.yayinevi.data, add_form.isbn.data)
@@ -259,6 +277,7 @@ def logout():
 
 @app.route('/show-book/<int:id>')
 def show_individual(id):
+
     is_admin = False
     if current_user.is_authenticated:
         is_admin = current_user.is_admin()
@@ -267,12 +286,20 @@ def show_individual(id):
         loggedin = False
     cursor.execute("SELECT * FROM Kitaplar WHERE KitapID = ?", id)
     book = cursor.fetchone()
-    return render_template("book.html", book=book, user=current_user, is_admin=is_admin, loggedin=loggedin)
+    if book.Durum == 'OduncAlindi':
+        available = False
+    else:
+        available = True
+    return render_template("book.html", book=book, user=current_user, is_admin=is_admin, loggedin=loggedin, available=available)
 
 
 @app.route('/edit-book/<int:id>', methods=['GET', 'POST'])
 def edit_book(id):
-    edit_form = AddBookForm()
+    if not current_user.is_admin():
+        print("Bu sayfaya erişim yetkiniz yok!")
+        flash("Bu sayfaya erişim yetkiniz yok!", "danger")
+        return redirect(url_for('index'))
+    edit_form = EditBookForm()
     if edit_form.validate_on_submit():
         yeni_baslik = edit_form.baslik.data
         yeni_yazar = edit_form.yazar.data
@@ -286,7 +313,7 @@ def edit_book(id):
         )
         conn.commit()
         flash('Kitap başarıyla güncellendi!', 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('show_individual', id=id))
 
     cursor.execute("SELECT * FROM Kitaplar WHERE KitapID = ?", id)
     book = cursor.fetchone()
