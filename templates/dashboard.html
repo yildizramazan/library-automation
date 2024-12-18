@@ -8,12 +8,45 @@
 <p>merhaba</p>
     {{name}}
     {{role}}
-    <ul>
-        {%for book in books%}
-        <li>{{book}}</li>
-        <a href="{{url_for('return_book', id=book.KitapID)}}">Return The Book</a>
-        {%endfor%}
+<h1>Ödünç Alınan Kitaplar</h1>
 
-    </ul>
+<table border="1">
+    <thead>
+        <tr>
+            <th>İşlem ID</th>
+            <th>Kitap ID</th>
+            <th>Kitap Adı</th>
+            <th>Yazar</th>
+            <th>Ödünç Tarihi</th>
+            <th>Son Teslim Tarihi</th>
+            <th>Teslim Tarihi</th>
+            <th>Durum</th>
+            <th>İade Et</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td>{{ book[0] }}</td> <!-- IslemID -->
+            <td>{{ book[1] }}</td> <!-- KitapID -->
+            <td>{{ book[2] }}</td> <!-- Kitap Adı -->
+            <td>{{ book[3] }}</td> <!-- Yazar -->
+            <td>{{ book[4] }}</td> <!-- Ödünç Tarihi -->
+            <td>{{ book[5] }}</td> <!-- Son Teslim Tarihi -->
+            <td>{{ book[6] }}</td> <!-- Teslim Tarihi -->
+            <td>{{ book[7] }}</td> <!-- Durum -->
+            <td>
+                {% if book[7] == 'IadeEdildi' %}
+                    ---
+                {% else %}
+                    <a href="{{url_for('return_book', id=book[1])}}">Return The Book</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 </body>
 </html>

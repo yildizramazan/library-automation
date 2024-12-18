@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.secret_key = "database-library-automation-project-240709022"
 
 server = 'localhost'
-database = 'master'
+database = 'library_db'
 server_username = 'SA'
 server_password = 'YourPassword123'
 conn = pyodbc.connect(
@@ -38,7 +38,7 @@ class User(UserMixin):
 @login_manager.user_loader
 def load_user(user_id):
     # Kullanıcıyı veritabanından çek
-    cursor.execute("SELECT KullaniciID, AdSoyad, Eposta, Rol FROM Kullanıcılar WHERE KullaniciID = ?", user_id)
+    cursor.execute("SELECT KullaniciID, AdSoyad, Eposta, Rol FROM Kullanicilar WHERE KullaniciID = ?", user_id)
     user = cursor.fetchone()
     if user:
         return User(id=user.KullaniciID, name=user.AdSoyad, email=user.Eposta, role=user.Rol)
@@ -122,21 +122,48 @@ def account():
     kullanıcıid = current_user.id
     name = current_user.name
     role = current_user.role
-    cursor.execute("SELECT * FROM OduncIslemleri WHERE KullaniciID = ?", kullanıcıid)
-    books = cursor.fetchall()
+    # cursor.execute("SELECT * FROM OduncIslemleri WHERE KullaniciID = ?", kullanıcıid)
+    # books = cursor.fetchall()
+    query = """
+        SELECT OduncIslemleri.IslemID, Kitaplar.KitapID, Kitaplar.Baslik, Kitaplar.Yazar, 
+               OduncIslemleri.OduncTarihi, OduncIslemleri.SonTeslimTarihi, OduncIslemleri.TeslimTarihi, OduncIslemleri.Durum
+        FROM OduncIslemleri
+        JOIN Kitaplar ON OduncIslemleri.KitapID = Kitaplar.KitapID
+        WHERE OduncIslemleri.KullaniciID = ?
+    """
+    cursor.execute(query, (kullanıcıid,))
+    books = cursor.fetchall()  # Burada kitap bilgileriyle birlikte ödünç işlemleri çekiliyor
+
     return render_template("dashboard.html", name=name, role=role, books=books)
 
+
+# @app.route('/return-book/<int:id>')
+# def return_book(id):
+#     print(id, current_user.id)
+#     kullanıcıid = current_user.id
+#     cursor.execute("DELETE FROM OduncIslemleri WHERE KullaniciID = ? AND KitapID = ?", (kullanıcıid, id))
+#     conn.commit()
+#     cursor.execute("UPDATE Kitaplar SET Durum = 'Mevcut' WHERE KitapID = ?", id)
+#     conn.commit()
+#     return redirect(url_for('account'))
+#
 
 @app.route('/return-book/<int:id>')
 def return_book(id):
     print(id, current_user.id)
     kullanıcıid = current_user.id
-    cursor.execute("DELETE FROM OduncIslemleri WHERE KullaniciID = ? AND KitapID = ?", (kullanıcıid, id))
+    cursor.execute(
+        """
+        UPDATE OduncIslemleri
+        SET TeslimTarihi = GETDATE(), Durum = 'IadeEdildi'
+        WHERE KullaniciID = ? AND KitapID = ? AND TeslimTarihi IS NULL
+        """,
+        (kullanıcıid, id)
+    )
     conn.commit()
     cursor.execute("UPDATE Kitaplar SET Durum = 'Mevcut' WHERE KitapID = ?", id)
     conn.commit()
     return redirect(url_for('account'))
-
 
 
 @app.route('/admin')
@@ -192,9 +219,13 @@ def borrow_book(kitapid):
         kitap_durum = cursor.fetchone()[0]
         print(kitap_durum)
         if kitap_durum == "Mevcut":
-            cursor.execute("INSERT INTO OduncIslemleri (KullaniciID, KitapID, OduncTarihi, TeslimTarihi)"
-                            "VALUES (?, ?, GETDATE(), DATEADD(DAY, 15, GETDATE()))",
-                           (current_user.id, kitapid) )
+            cursor.execute(
+                """
+                INSERT INTO OduncIslemleri (KullaniciID, KitapID, OduncTarihi, SonTeslimTarihi, TeslimTarihi)
+                VALUES (?, ?, GETDATE(), DATEADD(DAY, 15, GETDATE()), NULL)
+                """,
+                (current_user.id, kitapid)
+            )
             conn.commit()
             cursor.execute(
                 "UPDATE Kitaplar SET Durum = 'OduncAlindi' WHERE KitapID = ?",
@@ -221,7 +252,7 @@ def register():
         new_password = generate_password_hash(register_form.password.data)
         print(new_password)
         # Kullanıcı adı kontrolü
-        cursor.execute("SELECT * FROM Kullanıcılar WHERE Eposta = ?", new_username)
+        cursor.execute("SELECT * FROM Kullanicilar WHERE Eposta = ?", new_username)
         print(new_username)
         user = cursor.fetchone()
         if user:
@@ -230,7 +261,7 @@ def register():
 
         # Yeni kullanıcı ekleme
         cursor.execute(
-            "INSERT INTO Kullanıcılar (AdSoyad, Eposta, Sifre, Rol) VALUES (?, ?, ?, ?)",
+            "INSERT INTO Kullanicilar (AdSoyad, Eposta, Sifre, Rol) VALUES (?, ?, ?, ?)",
             (f"{new_name} {new_surname}", new_username, new_password, "Kullanici")
         )
         conn.commit()
@@ -248,7 +279,7 @@ def login():
         password = login_form.password.data
 
         # Kullanıcıyı veritabanından kontrol et
-        cursor.execute("SELECT KullaniciID, AdSoyad, Eposta, Sifre, Rol FROM Kullanıcılar WHERE Eposta = ?", username)
+        cursor.execute("SELECT KullaniciID, AdSoyad, Eposta, Sifre, Rol FROM Kullanicilar WHERE Eposta = ?", username)
         user = cursor.fetchone()
 
         if user:
