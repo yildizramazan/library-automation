@@ -1,29 +1,128 @@
-<!--add.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Book</title>
+    <style>
+        /* Genel stil ayarları */
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f4f6f7;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sayfa konteyneri */
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* Başlık stili */
+        h1 {
+            font-size: 32px;
+            color: #182d47;
+            margin-bottom: 20px;
+        }
+
+        /* Form etiket ve input stilleri */
+        p {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        form p {
+            display: flex; /* Flexbox düzeni */
+            flex-direction: column; /* Dikey hizalama */
+            align-items: flex-start; /* Etiketleri sola yasla */
+            margin-bottom: 10px;
+        }
+
+        /* Label için sola yaslama */
+        label {
+            font-size: 18px;
+            font-weight: 600;
+            color: #34495e;
+            margin-top: 10px;
+            margin-bottom: -15px; /* Label ile input arasında boşluk bırak */
+            text-align: left; /* Sola hizala */
+        }
+
+
+        input {
+            width: 97%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #1abc9c;
+            background-color: #f7ffff;
+            color: #003945;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        input[type="submit"], button {
+            all: unset; /* Tarayıcı varsayılan stillerini sıfırla */
+            background-color: #1abc9c; /* Arka plan rengi */
+            color: #fff; /* Yazı rengi */
+            padding: 10px 20px; /* İçerik dolgusu */
+            border-radius: 5px; /* Köşeleri yuvarla */
+            cursor: pointer; /* İmleci değiştir */
+            font-weight: 600; /* Kalın yazı */
+            font-size: 18px; /* Yazı boyutu */
+            text-transform: uppercase; /* Büyük harfler */
+            text-align: center; /* Ortala */
+            transition: all 0.3s ease; /* Geçiş animasyonu */
+            display: inline-block; /* Satır içi blok */
+        }
+
+        input[type="submit"]:hover, button:hover {
+            background-color: #16a085; /* Hover durumu */
+            opacity: 0.9; /* Hafif şeffaflık */
+        }
+        /* Footer stil ayarları */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #34495e;
+            color: #ecf0f1;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
 </head>
 <body>
-    <form method="POST" action="{{url_for('add')}}">
-        {{form.csrf_token}}
-        <p>
-            {{form.baslik.label}} <br> {{form.baslik(size=20)}}
-        </p>
-        <p>
-            {{form.yazar.label}} <br> {{form.yazar(size=20)}}
-        </p>
-        <p>
-            {{form.yayinevi.label}} <br> {{form.yayinevi(size=20)}}
-        </p>
-        <p>
-            {{form.tur.label}} <br> {{form.tur(size=20)}}
-        </p>
-        <p>
-            {{form.isbn.label}} <br> {{form.isbn(size=25)}}
-        </p>
-        {{ form.submit }}
-    </form>
+    <div class="container">
+        <h1>Add New Book</h1>
+        <form method="POST" action="{{url_for('add')}}">
+            {{form.csrf_token}}
+            <p>
+                {{form.baslik.label}} <br> {{form.baslik(size=20)}}
+            </p>
+            <p>
+                {{form.yazar.label}} <br> {{form.yazar(size=20)}}
+            </p>
+            <p>
+                {{form.yayinevi.label}} <br> {{form.yayinevi(size=20)}}
+            </p>
+            <p>
+                {{form.tur.label}} <br> {{form.tur(size=20)}}
+            </p>
+            <p>
+                {{form.isbn.label}} <br> {{form.isbn(size=25)}}
+            </p>
+            <button type="submit">{{ form.submit }}</button>
+        </form>
+    </div>
+    <footer>
+        © 2024 Library Automation | All rights reserved
+    </footer>
 </body>
 </html>

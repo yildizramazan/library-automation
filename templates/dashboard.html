@@ -2,51 +2,157 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <style>/* Hoş Geldiniz Mesajı */
+.welcome-message {
+    text-align: center;
+    font-size: 1.1em;
+    color: #2c3e50;
+    margin-bottom: 1em;
+    font-family: 'Roboto', Arial, sans-serif; /* Modern bir font ekledim */
+
+}
+
+/* Başlık */
+h1 {
+    text-align: center;
+    font-size: 2em;
+    font-family: 'Roboto', Arial, sans-serif; /* Modern bir font ekledim */
+    color: #2c3e50;
+    margin-bottom: 1em;
+}
+
+/* Tablo */
+table {
+    width: 90%;
+    margin: 0 auto 2em;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+thead {
+    background-color: #2c3e50;
+    color: white;
+    font-family: 'Roboto', Arial, sans-serif; /* Modern bir font ekledim */
+}
+
+thead th {
+    padding: 1em;
+    text-align: left;
+    font-weight: bold;
+    font-size: 1em;
+    font-family: 'Roboto', Arial, sans-serif; /* Modern bir font ekledim */
+
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #fff;
+}
+
+tbody td {
+    padding: 0.8em;
+    font-size: 0.9em;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-family: 'Roboto', Arial, sans-serif; /* Modern bir font ekledim */
+
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Return Link */
+.return-link {
+    color: #1abc9c;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+    font-family: 'Roboto', Arial, sans-serif; /* Modern bir font ekledim */
+}
+
+.return-link:hover {
+    color: #16a085;
+}
+
+/* Sayfa yapısı */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Footer */
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    padding: 1em 0;
+    background-color: #2c3e50;
+    color: white;
+    font-size: 0.9em;
+    border-top: 4px solid #1abc9c;
+    font-family: 'Roboto', Arial, sans-serif;
+}
+
+</style>
 </head>
 <body>
-<p>merhaba</p>
-    {{name}}
-    {{role}}
-<h1>Ödünç Alınan Kitaplar</h1>
+    <p class="welcome-message">
+        Merhaba, <strong>{{ name }}</strong> - Rolünüz: <strong>{{ role }}</strong>
+    </p>
+    <h1>Ödünç Alınan Kitaplar</h1>
 
-<table border="1">
-    <thead>
-        <tr>
-            <th>İşlem ID</th>
-            <th>Kitap ID</th>
-            <th>Kitap Adı</th>
-            <th>Yazar</th>
-            <th>Ödünç Tarihi</th>
-            <th>Son Teslim Tarihi</th>
-            <th>Teslim Tarihi</th>
-            <th>Durum</th>
-            <th>İade Et</th>
+    <table>
+        <thead>
+            <tr>
+                <th>İşlem ID</th>
+                <th>Kitap ID</th>
+                <th>Kitap Adı</th>
+                <th>Yazar</th>
+                <th>Ödünç Tarihi</th>
+                <th>Son Teslim Tarihi</th>
+                <th>Teslim Tarihi</th>
+                <th>Durum</th>
+                <th>İade Et</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book[0] }}</td>
+                <td>{{ book[1] }}</td>
+                <td>{{ book[2] }}</td>
+                <td>{{ book[3] }}</td>
+                <td>{{ book[4] }}</td>
+                <td>{{ book[5] }}</td>
+                <td>{{ book[6] if book[6] else '---' }}</td>
+                <td>{{ book[7] }}</td>
+                <td>
+                    {% if book[7] == 'IadeEdildi' %}
+                        ---
+                    {% else %}
+                        <a href="{{ url_for('return_book', id=book[1]) }}" class="return-link">
+                            Return Book
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-        </tr>
-    </thead>
-    <tbody>
-        {% for book in books %}
-        <tr>
-            <td>{{ book[0] }}</td> <!-- IslemID -->
-            <td>{{ book[1] }}</td> <!-- KitapID -->
-            <td>{{ book[2] }}</td> <!-- Kitap Adı -->
-            <td>{{ book[3] }}</td> <!-- Yazar -->
-            <td>{{ book[4] }}</td> <!-- Ödünç Tarihi -->
-            <td>{{ book[5] }}</td> <!-- Son Teslim Tarihi -->
-            <td>{{ book[6] }}</td> <!-- Teslim Tarihi -->
-            <td>{{ book[7] }}</td> <!-- Durum -->
-            <td>
-                {% if book[7] == 'IadeEdildi' %}
-                    ---
-                {% else %}
-                    <a href="{{url_for('return_book', id=book[1])}}">Return The Book</a>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
+    <footer>
+        © 2024 Library Automation | All rights reserved
+    </footer>
 </body>
 </html>

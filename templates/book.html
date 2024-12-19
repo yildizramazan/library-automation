@@ -1,26 +1,109 @@
-<!--book.html-->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>One Book</title>
+    <style>/* Genel stil ayarları */
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background-color: #f4f6f7;
+    color: #2c3e50;
+    margin: 0;
+    padding: 0;
+}
+
+/* Sayfa konteyneri */
+.container {
+    width: 80%;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Başlık stili */
+h1 {
+    font-size: 32px;
+    color: #1abc9c;
+    margin-bottom: 10px;
+}
+
+/* Alt başlık stili */
+h2 {
+    font-size: 24px;
+    color: #34495e;
+    margin-bottom: 20px;
+}
+
+/* Admin linkleri */
+.admin-actions {
+    margin-top: 30px;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+}
+
+.button.delete {
+    background-color: #e74c3c;
+    transition: opacity 0.3s ease;
+
+}
+
+.button.edit {
+    background-color: #0d9a5f;
+    transition: opacity 0.3s ease;
+
+}
+
+.button.borrow {
+    background-color: #1abc9c;
+    transition: opacity 0.3s ease;
+}
+
+.button:hover {
+    opacity: 0.6;
+
+}
+
+/* Bilgi mesajları */
+.info {
+    font-size: 16px;
+    color: #e74c3c;
+    margin-top: 20px;
+}
+</style>
 </head>
 <body>
-    <h1>{{book.Baslik}}</h1>
-    <h2>{{book.Yazar}}</h2>
-  {% if is_admin%}
-    <a href="{{url_for('delete_book', id=book.KitapID)}}"> Delete The Book </a>
-    <br>
-    <a href="{{url_for('edit_book', id=book.KitapID)}}"> Edit The Book </a>
-  <br>
-  {% endif %}
-  {% if not is_admin and loggedin and available%}
-    <a href="{{url_for('borrow_book', kitapid=book.KitapID)}}">Borrow the book</a>
-  <br>
-  {% endif %}
-  {% if not is_admin and loggedin and not available%}
-    <p>It is not available to borrow</p>
-  {% endif %}
+    <div class="container">
+        <h1>{{book.Baslik}}</h1>
+        <h2>{{book.Yazar}}</h2>
+
+        {% if is_admin %}
+            <div class="admin-actions">
+                <a href="{{url_for('delete_book', id=book.KitapID)}}" class="button delete">Delete The Book</a>
+                <a href="{{url_for('edit_book', id=book.KitapID)}}" class="button edit">Edit The Book</a>
+            </div>
+        {% endif %}
+
+        {% if not is_admin and loggedin and available %}
+            <a href="{{url_for('borrow_book', kitapid=book.KitapID)}}" class="button borrow">Borrow the book</a>
+        {% endif %}
+
+        {% if not is_admin and loggedin and not available %}
+            <p class="info">It is not available to borrow</p>
+        {% endif %}
+    </div>
 </body>
 </html>

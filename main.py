@@ -18,6 +18,7 @@ conn = pyodbc.connect(
     f'DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={server};DATABASE={database};UID={server_username};PWD={server_password};TrustServerCertificate=yes;',
     autocommit=True
 )
+app.config['DB_CONNECTION'] = conn
 
 cursor = conn.cursor()
 login_manager = LoginManager()
