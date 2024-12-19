@@ -38,7 +38,6 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Kullanıcıyı veritabanından çek
     cursor.execute("SELECT KullaniciID, AdSoyad, Eposta, Rol FROM Kullanicilar WHERE KullaniciID = ?", user_id)
     user = cursor.fetchone()
     if user:
@@ -83,12 +82,16 @@ class LoginForm(FlaskForm):
 
 
 def add_book(baslik, yazar, yayinevi, isbn, tur):
-    cursor.execute(
-        "INSERT INTO Kitaplar (Baslik, Yazar, Yayinevi, ISBN, Tur) VALUES (?, ?, ?, ?, ?)",
-        (baslik, yazar, yayinevi, isbn, tur)
-    )
-
-
+    try:
+        # Stored Procedure çağırma
+        cursor.execute(
+            "EXEC Book_Add @Baslik = ?, @Yazar = ?, @Yayinevi = ?, @ISBN = ?, @Tur = ?",
+            (baslik, yazar, yayinevi, isbn, tur)
+        )
+        conn.commit()  # Veritabanı işlemini tamamla
+        print(f"Kitap başarıyla eklendi: {baslik}")
+    except Exception as e:
+        print(f"Kitap ekleme sırasında hata oluştu: {e}")
 
 
 @app.route('/', methods=["GET", "POST"])
@@ -104,11 +107,18 @@ def index():
     searchform = SearchForm()
     if searchform.validate_on_submit():
         query = f"%{searchform.search_bar.data}%"
-        cursor.execute("SELECT * FROM Kitaplar WHERE "
-                       "Baslik LIKE (?) OR Yazar LIKE (?) OR Yayinevi LIKE (?) OR Baslik LIKE (?) OR ISBN LIKE (?)",
-                       (query, query, query, query, query)
-        )
-        results = cursor.fetchall()
+        try:
+            # Stored procedure çağrısı
+            cursor.execute(
+                """
+                EXEC Book_Search @SearchTerm = ?
+                """,
+                query
+            )
+            results = cursor.fetchall()
+        except Exception as e:
+            flash(f'Hata: {e}', 'danger')
+
     return render_template('index.html', results=results, searchform=searchform, is_admin=is_admin, loggedin=loggedin)
 
 
@@ -123,8 +133,6 @@ def account():
     kullanıcıid = current_user.id
     name = current_user.name
     role = current_user.role
-    # cursor.execute("SELECT * FROM OduncIslemleri WHERE KullaniciID = ?", kullanıcıid)
-    # books = cursor.fetchall()
     query = """
         SELECT OduncIslemleri.IslemID, Kitaplar.KitapID, Kitaplar.Baslik, Kitaplar.Yazar, 
                OduncIslemleri.OduncTarihi, OduncIslemleri.SonTeslimTarihi, OduncIslemleri.TeslimTarihi, OduncIslemleri.Durum
@@ -137,17 +145,6 @@ def account():
 
     return render_template("dashboard.html", name=name, role=role, books=books)
 
-
-# @app.route('/return-book/<int:id>')
-# def return_book(id):
-#     print(id, current_user.id)
-#     kullanıcıid = current_user.id
-#     cursor.execute("DELETE FROM OduncIslemleri WHERE KullaniciID = ? AND KitapID = ?", (kullanıcıid, id))
-#     conn.commit()
-#     cursor.execute("UPDATE Kitaplar SET Durum = 'Mevcut' WHERE KitapID = ?", id)
-#     conn.commit()
-#     return redirect(url_for('account'))
-#
 
 @app.route('/return-book/<int:id>')
 def return_book(id):
@@ -185,32 +182,54 @@ def add():
         return redirect(url_for('index'))
     add_form = AddBookForm()
     if add_form.validate_on_submit():
-        print(add_form.baslik.data, add_form.yazar.data ,add_form.yayinevi.data, add_form.isbn.data)
-        add_book(baslik=add_form.baslik.data, yazar=add_form.yazar.data, yayinevi=add_form.yayinevi.data, isbn=add_form.isbn.data, tur=add_form.tur.data)
+        add_book(baslik=add_form.baslik.data,
+                 yazar=add_form.yazar.data,
+                 yayinevi=add_form.yayinevi.data,
+                 isbn=add_form.isbn.data,
+                 tur=add_form.tur.data
+                 )
+        flash("Kitap başarıyla eklendi!", "success")
         return redirect(url_for("index"))
     return render_template('add.html', form=add_form)
 
+
+
+# @app.route('/delete/<int:id>')
+# @login_required
+# def delete_book(id):
+#     if not current_user.is_admin():
+#         print("bu silme işlemini yapma yetkiniz yok")
+#         flash("Bu sayfaya erişim yetkiniz yok!", "danger")
+#         return redirect(url_for('index'))
+#     try:
+#         # Kitabı veritabanından sil
+#         cursor.execute("DELETE FROM Kitaplar WHERE KitapID = ?", id)
+#         conn.commit()
+#         flash('Kitap başarıyla silindi!', 'success')
+#     except Exception as e:
+#         flash(f'Hata: {e}', 'danger')
+#
+#     # Silme işleminden sonra liste sayfasına yönlendir
+#     return redirect(url_for('index'))
 
 
 @app.route('/delete/<int:id>')
 @login_required
 def delete_book(id):
     if not current_user.is_admin():
-        print("bu silme işlemini yapma yetkiniz yok")
+        print("Bu silme işlemini yapma yetkiniz yok")
         flash("Bu sayfaya erişim yetkiniz yok!", "danger")
         return redirect(url_for('index'))
     try:
-        # Kitabı veritabanından sil
-        cursor.execute("DELETE FROM Kitaplar WHERE KitapID = ?", id)
-        conn.commit()
+        # Stored Procedure'ü çağırma
+        cursor.execute("EXEC Book_Delete @KitapID = ?", id)
+        conn.commit()  # İşlemi tamamla
         flash('Kitap başarıyla silindi!', 'success')
     except Exception as e:
         flash(f'Hata: {e}', 'danger')
 
-    # Silme işleminden sonra liste sayfasına yönlendir
+    # Silme işleminden sonra ana sayfaya yönlendirme
     return redirect(url_for('index'))
-
-
 
 @app.route('/borrow/<int:kitapid>')
 @login_required
@@ -260,9 +279,8 @@ def register():
             flash("Bu kullanıcı adı zaten alınmış!", "danger")
             return redirect(url_for('register'))
 
-        # Yeni kullanıcı ekleme
         cursor.execute(
-            "INSERT INTO Kullanicilar (AdSoyad, Eposta, Sifre, Rol) VALUES (?, ?, ?, ?)",
+            "EXEC User_Add @AdSoyad = ?, @Eposta = ?, @Sifre = ?, @Rol = ?",
             (f"{new_name} {new_surname}", new_username, new_password, "Kullanici")
         )
         conn.commit()
@@ -331,6 +349,7 @@ def edit_book(id):
         print("Bu sayfaya erişim yetkiniz yok!")
         flash("Bu sayfaya erişim yetkiniz yok!", "danger")
         return redirect(url_for('index'))
+
     edit_form = EditBookForm()
     if edit_form.validate_on_submit():
         yeni_baslik = edit_form.baslik.data
@@ -339,13 +358,18 @@ def edit_book(id):
         yeni_isbn = edit_form.isbn.data
         yeni_tur = edit_form.tur.data
 
-        cursor.execute(
-            "UPDATE Kitaplar SET Baslik = ?, Yazar = ?, Yayinevi = ?, ISBN = ?, Tur = ? WHERE KitapID = ?",
-            (yeni_baslik, yeni_yazar, yeni_yayınevi, yeni_isbn, yeni_tur, id)
-        )
-        conn.commit()
-        flash('Kitap başarıyla güncellendi!', 'success')
-        return redirect(url_for('show_individual', id=id))
+        try:
+            cursor.execute(
+                """
+                EXEC Book_Update @KitapID = ?, @Baslik = ?, @Yazar = ?, @Yayinevi = ?, @ISBN = ?, @Tur = ?
+                """,
+                (id, yeni_baslik, yeni_yazar, yeni_yayınevi, yeni_isbn, yeni_tur)
+            )
+            conn.commit()
+            flash('Kitap başarıyla güncellendi!', 'success')
+            return redirect(url_for('show_individual', id=id))
+        except Exception as e:
+            flash(f'Hata: {e}', 'danger')
 
     cursor.execute("SELECT * FROM Kitaplar WHERE KitapID = ?", id)
     book = cursor.fetchone()
@@ -357,7 +381,6 @@ def edit_book(id):
     edit_form.tur.data = book.Tur
 
     return render_template('edit.html', edit_form=edit_form, id=id)
-
 
 
 if __name__ == '__main__':
