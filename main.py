@@ -1,5 +1,5 @@
 import pyodbc
-from flask import Flask, render_template, redirect, url_for, request, flash, session, abort
+from flask import Flask, render_template, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
@@ -133,6 +133,10 @@ def account():
     kullanıcıid = current_user.id
     name = current_user.name
     role = current_user.role
+
+    cursor.execute("SELECT dbo.GetUserBorrowedBooksCount(?) AS BookCount", (kullanıcıid,))
+    book_count = cursor.fetchone().BookCount  # Toplam ödünç alınan kitap sayısı
+
     query = """
         SELECT OduncIslemleri.IslemID, Kitaplar.KitapID, Kitaplar.Baslik, Kitaplar.Yazar, 
                OduncIslemleri.OduncTarihi, OduncIslemleri.SonTeslimTarihi, OduncIslemleri.TeslimTarihi, OduncIslemleri.Durum
@@ -143,7 +147,7 @@ def account():
     cursor.execute(query, (kullanıcıid,))
     books = cursor.fetchall()  # Burada kitap bilgileriyle birlikte ödünç işlemleri çekiliyor
 
-    return render_template("dashboard.html", name=name, role=role, books=books)
+    return render_template("dashboard.html", name=name, role=role, books=books, book_count=book_count)
 
 
 @app.route('/return-book/<int:id>')
@@ -173,6 +177,32 @@ def admin_panel():
         return redirect(url_for('index'))
     return render_template('admin.html')
 
+@app.route('/all-books-listed')
+@login_required
+def all_books_listed():
+    if not current_user.is_admin():
+        print("Bu sayfaya erişim yetkiniz yok!")
+        flash("Bu sayfaya erişim yetkiniz yok!", "danger")
+        return redirect(url_for('index'))
+    cursor.execute("SELECT * FROM Kitaplar")
+    books = cursor.fetchall()
+    cursor.execute("SELECT dbo.GetAvailableBooksCount() AS AvailableBooks")
+    available_books_count = cursor.fetchone().AvailableBooks
+    return render_template('all-books.html', books=books, available_books_count=available_books_count)
+
+@app.route('/book-logs')
+@login_required
+def logs():
+    if not current_user.is_admin():
+        print("Bu sayfaya erişim yetkiniz yok!")
+        flash("Bu sayfaya erişim yetkiniz yok!", "danger")
+        return redirect(url_for('index'))
+    # cursor.execute("SELECT * FROM KitapLog")
+    cursor.execute("UPDATE Kitaplog SET Islem = 'Silindi' WHERE KitapID = NULL")
+    conn.commit()
+    cursor.execute("SELECT CONVERT(NVARCHAR, Tarih, 3) AS Tarih, Baslik, Islem FROM KitapLog")
+    all_logs = cursor.fetchall()
+    return render_template('logs.html', logs=all_logs)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
@@ -382,9 +412,26 @@ def edit_book(id):
 
     return render_template('edit.html', edit_form=edit_form, id=id)
 
+# Aktif kullanıcılara göre sıralama yapan route
+@app.route('/active-users')
+def get_active_users():
+    # SQL fonksiyonunu çağır
+    cursor.execute("SELECT * FROM GetActiveUsers() ORDER BY ToplamOduncSayisi DESC;")
+    rows = cursor.fetchall()
+    # rows'u HTML sayfasına gönder
+    return render_template('active-users.html', rows=rows)
+
+@app.route('/popular-books')
+@login_required
+def popular_books():
+    cursor.execute("SELECT * FROM PopulerKitaplar ORDER BY OduncSayisi DESC;")
+    books = cursor.fetchall()
+    return render_template("popular-books.html", books=books)
+
+
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=5005)
 
 cursor.close()
 conn.close()

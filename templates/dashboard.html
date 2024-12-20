@@ -110,6 +110,7 @@ footer {
     <p class="welcome-message">
         Merhaba, <strong>{{ name }}</strong> - Rolünüz: <strong>{{ role }}</strong>
     </p>
+    <p>Aktif olarak ödünç aldığınız toplam kitap sayısı: <strong>{{ book_count }}</strong></p>
     <h1>Ödünç Alınan Kitaplar</h1>
 
     <table>
@@ -141,7 +142,8 @@ footer {
                     {% if book[7] == 'IadeEdildi' %}
                         ---
                     {% else %}
-                        <a href="{{ url_for('return_book', id=book[1]) }}" class="return-link">
+                        <a href="{{ url_for('return_book', id=book[1]) }}" class="return-link btn btn-danger"
+                        onclick="return confirm('Bu kitabı iade istediğinize emin misiniz?')">
                             Return Book
                         </a>
                     {% endif %}

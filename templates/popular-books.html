@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Popular Books</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #2c3e50;
+            color: white;
+            font-size: 1.1em;
+        }
+
+        td {
+            background-color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 20px;
+            font-size: 2em;
+        }
+
+        p {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>Popular Books</h1>
+<p>The most popular books available:</p>
+
+<table>
+    <tr>
+        <th>Book Title</th>
+        <th>Author</th>
+        <th>Lending Count</th>
+    </tr>
+    {% for book in books %}
+    <tr>
+        <td>{{ book.Baslik }}</td>
+        <td>{{ book.Yazar }}</td>
+        <td>{{ book.OduncSayisi }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
