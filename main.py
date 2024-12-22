@@ -336,7 +336,7 @@ def login():
             if check_password_hash(user.Sifre, password):
                 user_obj = User(id=user.KullaniciID, name=user.AdSoyad, email=user.Eposta, role=user.Rol)
                 login_user(user_obj)  # Flask-Login ile kullanıcıyı oturum açtır
-                flash(f"Hoşgeldiniz, {user.AdSoyad}!", "success")
+                flash(f"Hpşgeldiniz, {user.AdSoyad}!", "success")
                 return redirect(url_for('index'))  # Ana sayfaya yönlendir
             else:
                 print("Hatalı şifre! Lütfen tekrar deneyin.")
