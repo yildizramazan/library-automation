@@ -1,128 +1,154 @@
-<!--index.html-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <style>/* Genel ayarlar */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-}
+    <style>
+        /* Genel ayarlar */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
 
-/* Navbar */
-nav {
-    background-color: #11314c;
-    padding: 1em;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        /* Navbar */
+        nav {
+            background-color: #11314c;
+            padding: 0.5em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-nav div {
-    display: flex;
-    gap: 1em;
-}
+        nav div {
+            display: flex;
+            gap: 1em;
+        }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    font-size: 1em;
-    padding: 0.5em;
-    border: none;
-    border-radius: 5px;
-    background-color: #bc1a1a;
-    transition: background-color 0.3s ease;
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+            padding: 0.5em;
+            border: none;
+            border-radius: 5px;
+            background-color: #11314c;
+            transition: background-color 0.3s ease;
+        }
 
-}
+        nav a:hover {
+            background-color: #1abc9c;
+        }
 
-nav a:hover {
-    background-color: #1abc9c;
-}
+        /* Banner Resmi */
+        .banner {
+            width: 100%;
+            height: 550px; /* Navbar kadar yüksekliği çıkarttık */
+            background-image: url('{{ url_for('static', filename='images/daniel.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .banner h1 {
+            color: white;
+            font-size: 3.5em;
+            font-family: 'Poppins', sans-serif;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.8em 1.5em;
+            border-radius: 12px;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
 
-/* Arama formu */
-form {
-    margin: 2em auto;
-    text-align: center;
-}
+        /* Arama formu */
+   /* Arama formu */
+        form {
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            top: -50px; /* Banner ile üst üste gelmesini engellemek için yukarı taşındı */
+        }
 
-form p {
-    margin: 0;
-}
+        form p {
+            margin: 0;
+        }
 
-input[type="text"] {
-    padding: 0.5em;
-    font-size: 1em;
-    width: 300px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+        input[type="text"] {
+            padding: 0.5em;
+            font-size: 1em;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
 
-input[type="submit"] {
-    padding: 0.5em 1em;
-    font-size: 1em;
-    color: white;
-    background-color: #11314c;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
+        input[type="submit"] {
+            padding: 0.5em 1em;
+            font-size: 1em;
+            color: white;
+            background-color: #11314c;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
 
-input[type="submit"]:hover {
-    background-color: #1abc9c;
-}
+        input[type="submit"]:hover {
+            background-color: #1abc9c;
+        }
 
-/* Kitap listesi */
-ul {
-    list-style: none;
-    padding: 0;
-    margin: 2em auto;
-    max-width: 600px;
-}
+        /* Kitap listesi */
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 2em auto;
+            max-width: 600px;
+        }
 
-li {
-    background-color: white;
-    margin: 0.5em 0;
-    padding: 1em;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        li {
+            background-color: white;
+            margin: 0.5em 0;
+            padding: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-li span {
-    font-size: 1em;
-}
+        li span {
+            font-size: 1em;
+        }
 
-li a {
-    color: #2c3e50;
-    text-decoration: none;
-    font-size: 0.9em;
-    font-weight: bold;
-    transition: color 0.3s ease;
-}
+        li a {
+            color: #2c3e50;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
 
-li a:hover {
-    color: #1abc9c;
-}
+        li a:hover {
+            color: #1abc9c;
+        }
 
-/* Footer stil ayarları */
-footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #34495e;
-    color: #ecf0f1;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-}
-</style>
+        /* Footer stil ayarları */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #14314b;
+            color: white;
+             /* Sabit pozisyondan çıkarıldı */
+            margin-top: auto;
+        }
+    </style>
 </head>
 <body>
 
@@ -143,6 +169,11 @@ footer {
             <a href="{{url_for('logout')}}">Log out</a>
         {% endif %}
     </nav>
+
+    <!-- Banner Resmi -->
+    <div class="banner">
+        <h1>Library Automation</h1>
+    </div>
 
     <!-- Search Form -->
     <form method="POST" action="{{url_for('index')}}">
