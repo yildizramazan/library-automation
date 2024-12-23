@@ -1,0 +1,7 @@
+pyodbc
+Flask
+Flask-Login
+Flask-WTF
+WTForms
+Werkzeug
+.
