@@ -4,102 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Book</title>
-    <style>/* Genel stil ayarları */
-body {
-    font-family: 'Roboto', Arial, sans-serif;
-    /*background-color: #34495e;*/
-    background-color: #ecf0f1;
-    color: #ecf0f1;
-    margin: 0;
-    padding: 0;
-}
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #ecf0f1;
+            color: #ecf0f1;
+            margin: 0;
+            padding: 0;
+        }
 
-/* Başlık stili */
-h1 {
-    /*color: #1abc9c;*/
-    color: #34495e;
-    text-align: center;
-    margin-top: 50px;
-}
 
-/* Form düzenlemeleri */
-form {
-    width: 60%;
-    margin: 30px auto;
-    background-color: #d3dce6;
-    padding: 20px;
-    border-radius: 8px;
-}
+        h1 {
 
-/* Hata mesajları */
-.error {
-    color: #e74c3c;
-    font-size: 14px;
-    margin-bottom: 10px;
-}
+            color: #34495e;
+            text-align: center;
+            margin-top: 50px;
+        }
 
-/* Etiket ve input alanları */
-p {
-    margin: 20px 0;
-}
 
-label {
-    font-size: 20px;
-    font-family: 'Roboto', Arial, sans-serif;
-    color: #1b1c1c;
-}
+        form {
+            width: 60%;
+            margin: 30px auto;
+            background-color: #d3dce6;
+            padding: 20px;
+            border-radius: 8px;
+        }
 
-input {
-    width: 97%;
-    padding: 10px;
-    margin-top: 5px;
-    border-radius: 4px;
-    border: 1px solid #1abc9c;
-    background-color: #dceaef;
-    color: #032c33;
-    font-family: 'Roboto', Arial, sans-serif;
-    font-weight: 400;
-    font-size: 16px;
-}
 
-button {
-    background-color: #1abc9c;
-    color: #ecf0f1;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    width: 100%;
-    margin-top: 20px;
-    transition: background-color 0.3s ease;
-}
 
-button:hover {
-    background-color: #16a085;
-}
+        p {
+            margin: 20px 0;
+        }
 
-/* Footer stil ayarları */
-footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #34495e;
-    color: #ecf0f1;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-}
-</style>
+        label {
+            font-size: 20px;
+            font-family: 'Roboto', Arial, sans-serif;
+            color: #1b1c1c;
+        }
+
+        input {
+            width: 97%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #1abc9c;
+            background-color: #dceaef;
+            color: #032c33;
+            font-family: 'Roboto', Arial, sans-serif;
+            font-weight: 400;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #1abc9c;
+            color: #ecf0f1;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #16a085;
+        }
+
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #34495e;
+            color: #ecf0f1;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
 </head>
 <body>
     <div>
         <h1>Edit Book</h1>
         <form method="POST" action="{{url_for('edit_book', id=id)}}">
-            {% for field, errors in edit_form.errors.items() %}
-                {% for error in errors %}
-                <p class="error">{{ field }}: {{ error }}</p>
-                {% endfor %}
-            {% endfor %}
             {{edit_form.csrf_token}}
             <p>
                 {{edit_form.baslik.label}} <br> {{edit_form.baslik(size=20)}}

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Book</title>
     <style>
-        /* Genel stil ayarları */
         body {
             font-family: 'Roboto', Arial, sans-serif;
             background-color: #f4f6f7;
@@ -14,7 +13,6 @@
             padding: 0;
         }
 
-        /* Sayfa konteyneri */
         .container {
             width: 80%;
             max-width: 800px;
@@ -26,34 +24,32 @@
             text-align: center;
         }
 
-        /* Başlık stili */
         h1 {
             font-size: 32px;
             color: #182d47;
             margin-bottom: 20px;
         }
 
-        /* Form etiket ve input stilleri */
+
         p {
             margin-bottom: 10px;
             font-size: 16px;
         }
 
         form p {
-            display: flex; /* Flexbox düzeni */
-            flex-direction: column; /* Dikey hizalama */
-            align-items: flex-start; /* Etiketleri sola yasla */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
             margin-bottom: 10px;
         }
 
-        /* Label için sola yaslama */
         label {
             font-size: 18px;
             font-weight: 600;
             color: #34495e;
             margin-top: 10px;
-            margin-bottom: -15px; /* Label ile input arasında boşluk bırak */
-            text-align: left; /* Sola hizala */
+            margin-bottom: -15px;
+            text-align: left;
         }
 
 
@@ -68,25 +64,25 @@
             font-weight: 400;
         }
         input[type="submit"], button {
-            all: unset; /* Tarayıcı varsayılan stillerini sıfırla */
-            background-color: #1abc9c; /* Arka plan rengi */
-            color: #fff; /* Yazı rengi */
-            padding: 10px 20px; /* İçerik dolgusu */
-            border-radius: 5px; /* Köşeleri yuvarla */
-            cursor: pointer; /* İmleci değiştir */
-            font-weight: 600; /* Kalın yazı */
-            font-size: 18px; /* Yazı boyutu */
-            text-transform: uppercase; /* Büyük harfler */
-            text-align: center; /* Ortala */
-            transition: all 0.3s ease; /* Geçiş animasyonu */
-            display: inline-block; /* Satır içi blok */
+            all: unset;
+            background-color: #1abc9c;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 18px;
+            text-transform: uppercase;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: inline-block;
         }
 
         input[type="submit"]:hover, button:hover {
-            background-color: #16a085; /* Hover durumu */
-            opacity: 0.9; /* Hafif şeffaflık */
+            background-color: #16a085;
+            opacity: 0.9;
         }
-        /* Footer stil ayarları */
+
         footer {
             text-align: center;
             padding: 20px;

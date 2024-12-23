@@ -3,134 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Panel</title>
-<!--    <style>-->
-<!--        /* Genel stil ayarları */-->
-<!--body {-->
-<!--    font-family: 'Roboto', Arial, sans-serif;-->
-<!--    background-color: #f4f6f7;-->
-<!--    color: #2c3e50;-->
-<!--    margin: 0;-->
-<!--    padding: 0;-->
-<!--    display: flex;-->
-<!--    flex-direction: column;-->
-<!--    align-items: center;-->
-<!--}-->
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f4f6f7;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-<!--/* Başlık stili */-->
-<!--h1 {-->
-<!--    font-size: 36px;-->
-<!--    color: #1abc9c;-->
-<!--    margin: 20px 0;-->
-<!--    text-align: center;-->
-<!--}-->
+        h1 {
+            font-size: 36px;
+            color: #2c3e50;
+            margin: 20px 0;
+            text-align: center;
+            width: 100%;
+        }
 
-<!--/* Link butonları */-->
-<!--a {-->
-<!--    display: block;-->
-<!--    padding: 10px 20px;-->
-<!--    margin: 10px;-->
-<!--    border-radius: 5px;-->
-<!--    text-decoration: none;-->
-<!--    font-weight: 600;-->
-<!--    color: #fff;-->
-<!--    text-align: center;-->
-<!--    transition: opacity 0.3s ease;-->
-<!--}-->
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 50px;
+            gap: 20px;
+        }
 
-<!--a:hover {-->
-<!--    opacity: 0.7;-->
-<!--}-->
 
-<!--/* Farklı link türleri */-->
-<!--a {-->
-<!--    background-color: #e74c3c;-->
-<!--    transition: opacity 0.3s ease;-->
-<!--}-->
+        a {
+            display: inline-block;
+            width: 150px;
+            height: 100px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            line-height: 100px;
+            font-size: 16px;
+            transition: opacity 0.3s ease;
+        }
 
-<!--a[href*="add"] {-->
-<!--    background-color: #0d9a5f;-->
-<!--    transition: opacity 0.3s ease;-->
-<!--}-->
 
-<!--a[href*="logs"] {-->
-<!--    background-color: #1abc9c;-->
-<!--    transition: opacity 0.3s ease;-->
-<!--}-->
+        a {
+            background-color: #e74c3c;
+        }
 
-<!--    </style>-->
-    <style>/* Genel stil ayarları */
-body {
-    font-family: 'Roboto', Arial, sans-serif;
-    background-color: #f4f6f7;
-    color: #2c3e50;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-}
+        a[href*="add"] {
+            background-color: #0d9a5f;
+        }
 
-/* Başlık stili */
-h1 {
-    font-size: 36px;
-    color: #2c3e50;
-    margin: 20px 0;
-    text-align: center;
-    width: 100%;
-}
+        a[href*="logs"] {
+            background-color: #ff6406;
+        }
 
-/* Buton konteyneri */
-.button-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 50px; /* Butonları aşağı indirir */
-    gap: 20px; /* Butonlar arası boşluk */
-}
-
-/* Buton stili */
-a {
-    display: inline-block;
-    width: 150px;
-    height: 100px;
-    border-radius: 8px; /* Hafif köşeli */
-    text-decoration: none;
-    font-weight: 600;
-    color: #fff;
-    text-align: center;
-    line-height: 100px; /* Dikey hizalama */
-    font-size: 16px;
-    transition: opacity 0.3s ease;
-}
-
-/* Farklı link türleri */
-a {
-    background-color: #e74c3c;
-}
-
-a[href*="add"] {
-    background-color: #0d9a5f;
-}
-
-a[href*="logs"] {
-    background-color: #ff6406;
-}
-
-a:hover {
-    opacity: 0.7;
-}
-</style>
+        a:hover {
+            opacity: 0.7;
+        }
+    </style>
 
 </head>
 <body>
-<h1>Admin Panel</h1>
-<div class="button-container">
-    <a href="{{url_for('all_books_listed')}}"; style="background-color: #bc1a1a;">Edit/Delete Books</a>
-    <a href="{{ url_for('add') }}">Add Book</a>
-    <a href="{{ url_for('logs') }}">Logs</a>
-    <a href="{{ url_for('get_active_users') }}"; style="background-color: #e74c3c;">Users</a>
-    <a href="{{ url_for('popular_books') }}"; style="background-color: #139e84;">Books Popularity</a>
-</div>
+    <h1>Admin Panel</h1>
+    <div class="button-container">
+        <a href="{{url_for('all_books_listed')}}" style="background-color: #bc1a1a">Edit/Delete Books</a>
+        <a href="{{ url_for('add') }}" style="background-color: #0d9a5f">Add Book</a>
+        <a href="{{ url_for('logs') }}" style="background-color: #ff6406">Logs</a>
+        <a href="{{ url_for('get_active_users') }}" style="background-color: #e74c3c">Users</a>
+        <a href="{{ url_for('popular_books') }}" style="background-color: #139e84">Books Popularity</a>
+    </div>
 </body>
 </html>
