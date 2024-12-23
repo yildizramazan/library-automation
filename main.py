@@ -8,7 +8,7 @@ from flask_wtf import FlaskForm  # module for creating web forms
 from wtforms import StringField, IntegerField, PasswordField, SubmitField  # fields for the forms
 from wtforms.validators import DataRequired  # validator to ensure required fields are not empty
 
-# create a flask application
+#create a flask application
 app = Flask(__name__)
 
 # set a secret key for session management and csrf protection
