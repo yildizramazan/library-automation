@@ -100,7 +100,8 @@
         {% endif %}
 
         {% if not is_admin and loggedin and available %}
-            <a href="{{url_for('borrow_book', kitapid=book.KitapID)}}" class="button borrow">Borrow the book</a>
+            <a href="{{url_for('borrow_book', kitapid=book.KitapID)}}" class="button borrow" onclick="return confirm('Are you sure you want to borrow this book?')">
+                Borrow the book</a>
         {% endif %}
 
         {% if not is_admin and loggedin and not available %}

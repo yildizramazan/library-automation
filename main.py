@@ -1,7 +1,7 @@
 # after running "pip install -r requirements.txt" on terminal
 
 import pyodbc  # library for connecting to databases using odbc
-from flask import Flask, render_template, redirect, url_for, flash  # flask modules for web development
+from flask import Flask, render_template, redirect, url_for, flash, request  # flask modules for web development
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash  # modules for password hashing
 from flask_wtf import FlaskForm  # module for creating web forms
@@ -14,6 +14,18 @@ app = Flask(__name__)
 # set a secret key for session management and csrf protection
 app.secret_key = "database-library-automation-project-240709022"
 
+
+# FOR WINDOWS
+# connection_string = (
+#     "Driver={ODBC Driver 17 for SQL Server};"
+#     "Server=HP-OMEN15;"  # Replace with your server name
+#     "Database=library_db;"
+#     "Trusted_Connection=yes;"
+# )
+# conn = pyodbc.connect(connection_string)
+
+
+# FOR MACOS
 # define database connection details
 server = 'localhost'  # database server address
 database = 'library_db'  # name of the database
@@ -79,7 +91,7 @@ class EditBookForm(FlaskForm):
     yayinevi = StringField('Publisher', validators=[DataRequired()])  # field for publisher name
     isbn = IntegerField('ISBN', validators=[DataRequired()])  # field for isbn
     tur = StringField('Genre', validators=[DataRequired()])  # field for book genre
-    submit = SubmitField('Edit Book')  # submit button for the form
+    submit = SubmitField('Submit')  # submit button for the form
 
 # form class for searching books in the library
 class SearchForm(FlaskForm):
@@ -99,15 +111,6 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])  # field for username
     password = PasswordField('Password', validators=[DataRequired()])  # field for password
     submit = SubmitField('Login')
-
-
-# function to add a new book using a stored procedure
-def add_book(baslik, yazar, yayinevi, isbn, tur):
-    # call the stored procedure Book_Add with the provided parameters
-    cursor.execute(
-            "EXEC Book_Add @Baslik = ?, @Yazar = ?, @Yayinevi = ?, @ISBN = ?, @Tur = ?",
-            (baslik, yazar, yayinevi, isbn, tur)
-        )
 
 # route for the home page
 @app.route('/', methods=["GET", "POST"])
@@ -232,6 +235,14 @@ def logs():
     return render_template('logs.html', logs=all_logs)
 
 
+# function to add a new book using a stored procedure
+def add_book(baslik, yazar, yayinevi, isbn, tur):
+    # call the stored procedure Book_Add with the provided parameters
+    cursor.execute(
+            "EXEC Book_Add @Baslik = ?, @Yazar = ?, @Yayinevi = ?, @ISBN = ?, @Tur = ?",
+            (baslik, yazar, yayinevi, isbn, tur)
+        )
+
 # the route that has the add form for the admin to add a book
 @app.route('/add', methods=['GET', 'POST'])
 def add():
@@ -264,7 +275,7 @@ def delete_book(id):
         return redirect(url_for('index'))
 
     cursor.execute("EXEC Book_Delete @KitapID = ?", id)
-    return redirect(url_for('all_books_listed'))
+    return redirect(url_for('admin_panel'))
 
 
 # a route that is for the user to borrow a book. again it doesn't render a html file but only works like a function
@@ -289,7 +300,7 @@ def borrow_book(kitapid):
             "UPDATE Kitaplar SET Durum = 'OduncAlindi' WHERE KitapID = ?",
             kitapid
         )
-    return redirect(url_for('index'))
+    return redirect(url_for('account'))
 
 # the route that has the register form for a new user to register
 @app.route('/register', methods=['GET', 'POST'])
@@ -398,12 +409,13 @@ def edit_book(id):
     cursor.execute("SELECT * FROM Kitaplar WHERE KitapID = ?", id)
     book = cursor.fetchone()
 
-    # pre-fills the form with the current book details
-    edit_form.baslik.data = book.Baslik
-    edit_form.yazar.data = book.Yazar
-    edit_form.yayinevi.data = book.Yayinevi
-    edit_form.isbn.data = book.ISBN
-    edit_form.tur.data = book.Tur
+    if request.method == 'GET':
+        # pre-fills the form with the current book details
+        edit_form.baslik.data = book.Baslik
+        edit_form.yazar.data = book.Yazar
+        edit_form.yayinevi.data = book.Yayinevi
+        edit_form.isbn.data = book.ISBN
+        edit_form.tur.data = book.Tur
 
     if edit_form.validate_on_submit():
         # retrieves updated book details from the form
@@ -449,7 +461,7 @@ def popular_books():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5004) # starts the flask application
+    app.run(debug=True, port=5001) # starts the flask application
 
 
 # closes the cursor to release database resources

@@ -88,7 +88,16 @@
             flex-direction: column;
             min-height: 100vh;
         }
-
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+            padding: 0.5em;
+            border: none;
+            border-radius: 5px;
+            background-color: #11314c;
+            transition: background-color 0.3s ease;
+        }
 
         footer {
             position: fixed;
@@ -106,6 +115,9 @@
     </style>
 </head>
 <body>
+<nav>
+    <a href="{{ url_for('index') }}">Home</a>
+</nav>
     <p class="welcome-message">
         Hello, <strong>{{ name }}</strong> - Your Role: <strong>{{ role }}</strong>
     </p>
